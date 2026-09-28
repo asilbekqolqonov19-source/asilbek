@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Guleza pufakchalari - chiroyli animatsiya">
+  <title>Guleza 🌸</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: linear-gradient(180deg, #ffdde8 0%, #ffc1d9 35%, #ffa8cc 70%, #ff8fc0 100%);
+      position: relative;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    #title {
+      position: fixed;
+      top: calc(28px + env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: clamp(28px, 7vw, 46px);
+      font-weight: 800;
+      text-shadow: 0 3px 12px rgba(200,20,110,0.45), 0 0 30px rgba(255,255,255,0.5);
+      letter-spacing: 6px;
+      pointer-events: none;
+      z-index: 10;
+      text-align: center;
+      animation: glow 2.5s ease-in-out infinite;
+    }
+    #subtitle {
+      position: fixed;
+      top: calc(78px + env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: clamp(13px, 3vw, 18px);
+      font-weight: 500;
+      letter-spacing: 3px;
+      opacity: 0.85;
+      pointer-events: none;
+      z-index: 10;
+      text-align: center;
+      text-shadow: 0 2px 6px rgba(200,20,110,0.35);
+    }
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 3px 12px rgba(200,20,110,0.45), 0 0 30px rgba(255,255,255,0.5); }
+      50% { text-shadow: 0 3px 18px rgba(200,20,110,0.6), 0 0 45px rgba(255,255,255,0.85); }
+    }
+  </style>
+</head>
+<body>
+  <div id="title">🌸 GULEZA 🌸</div>
+  <div id="subtitle">✨ eng go'zal qiz ✨</div>
+  <canvas id="c"></canvas>
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+ 
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+ 
+    const W = () => canvas.width;
+    const H = () => canvas.height;
+ 
+    const PALETTE = [
+      { core: '255,255,255', mid: '255,200,225', edge: '255,105,180', text: '#c2185b' },
+      { core: '255,255,255', mid: '230,190,255', edge: '186,104,255', text: '#7b1fa2' },
+      { core: '255,255,255', mid: '255,220,180', edge: '255,171,64', text: '#e65100' },
+      { core: '255,255,255', mid: '190,235,255', edge: '77,182,255', text: '#0277bd' }
+    ];
+ 
+    const WORDS = ['GULEZA', '🌸', '💖', '✨'];
+ 
+    class Petal {
+      constructor(init) { this.reset(init); }
+      reset(init) {
+        this.x = Math.random() * W();
+        this.y = init ? Math.random() * H() : -20;
+        this.size = 6 + Math.random() * 8;
+        this.dy = 0.6 + Math.random() * 1.2;
+        this.dx = (Math.random() - 0.5) * 1.2;
+        this.rot = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.05;
+        this.hue = Math.random() < 0.5 ? '#ff8fc0' : '#ffd1e8';
+        this.alpha = 0.5 + Math.random() * 0.4;
+      }
+      update() {
+        this.y += this.dy;
+        this.x += this.dx + Math.sin(this.y * 0.02) * 0.6;
+        this.rot += this.rotSpeed;
+        if (this.y > H() + 20) this.reset(false);
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rot);
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.hue;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.size, this.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+ 
+    class Sparkle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * W();
+        this.y = Math.random() * H();
+        this.size = 1 + Math.random() * 2.5;
+        this.speed = 0.02 + Math.random() * 0.03;
+        this.phase = Math.random() * Math.PI * 2;
+      }
+      update() { this.phase += this.speed; }
+      draw() {
+        const a = (Math.sin(this.phase) + 1) / 2;
+        ctx.save();
+        ctx.globalAlpha = a * 0.9;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+ 
+    class Bubble {
+      constructor(init) { this.reset(init); }
+      reset(init) {
+        this.r = 42 + Math.random() * 38;
+        this.x = this.r + Math.random() * (W() - this.r * 2);
+        this.y = init ? Math.random() * H() : H() + Math.random() * 200 + this.r;
+        this.dy = 0.7 + Math.random() * 1.3;
+        this.dx = (Math.random() - 0.5) * 0.7;
+        this.alpha = 0.5 + Math.random() * 0.4;
+        this.wobble = Math.random() * Math.PI * 2;
+        this.wobbleSpeed = 0.013 + Math.random() * 0.012;
+        this.palette = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+        this.word = WORDS[Math.floor(Math.random() * WORDS.length)];
+        this.pulsePhase = Math.random() * Math.PI * 2;
+      }
+      update() {
+        this.wobble += this.wobbleSpeed;
+        this.pulsePhase += 0.02;
+        this.x += this.dx + Math.sin(this.wobble) * 0.45;
+        this.y -= this.dy;
+        if (this.y + this.r < -30 || this.x < -100 || this.x > W() + 100) {
+          this.reset(false);
+        }
+      }
+      draw() {
+        const pulse = 1 + Math.sin(this.pulsePhase) * 0.03;
+        const r = this.r * pulse;
+        const p = this.palette;
+ 
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+        const grad = ctx.createRadialGradient(
+          this.x - r * 0.2, this.y - r * 0.2, r * 0.05,
+          this.x, this.y, r
+        );
+        grad.addColorStop(0, `rgba(${p.core},0.85)`);
+        grad.addColorStop(0.5, `rgba(${p.mid},0.45)`);
+        grad.addColorStop(1, `rgba(${p.edge},0.25)`);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${p.edge},0.9)`;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.restore();
+ 
+        ctx.save();
+        ctx.globalAlpha = this.alpha * 0.55;
+        ctx.beginPath();
+        ctx.arc(this.x - r * 0.28, this.y - r * 0.3, r * 0.38, 0, Math.PI * 2);
+        const shineGrad = ctx.createRadialGradient(
+          this.x - r * 0.28, this.y - r * 0.35, 0,
+          this.x - r * 0.28, this.y - r * 0.3, r * 0.38
+        );
+        shineGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
+        shineGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = shineGrad;
+        ctx.fill();
+        ctx.restore();
+ 
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, this.alpha + 0.3);
+        const isEmoji = this.word.length <= 2;
+        const fs = isEmoji ? Math.max(14, Math.round(r * 0.7)) : Math.max(9, Math.round(r / 3.4));
+        ctx.font = `bold ${fs}px 'Segoe UI', Helvetica, Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        if (!isEmoji) {
+          ctx.fillStyle = p.text;
+          ctx.shadowColor = 'rgba(255,255,255,0.6)';
+          ctx.shadowBlur = 3;
+        }
+        ctx.fillText(this.word, this.x, this.y);
+        ctx.restore();
+      }
+    }
+ 
+    const petals = Array.from({ length: 18 }, () => new Petal(true));
+    const sparkles = Array.from({ length: 60 }, () => new Sparkle());
+    const bubbles = Array.from({ length: 15 }, () => new Bubble(true));
+ 
+    let t = 0;
+    function drawWaves() {
+      const baseline = H() * 0.86;
+      const layers = [
+        { amp: 14, len: 0.018, speed: 0.02, offset: 0,   color: 'rgba(255,255,255,0.28)', height: 0.10 },
+        { amp: 20, len: 0.013, speed: 0.015, offset: 2,  color: 'rgba(255,182,213,0.55)', height: 0.14 },
+        { amp: 26, len: 0.010, speed: 0.011, offset: 4,  color: 'rgba(255,133,189,0.85)', height: 0.20 }
+      ];
+      layers.forEach(l => {
+        ctx.beginPath();
+        ctx.moveTo(0, H());
+        const yBase = baseline + l.height * H() * 0.4;
+        for (let x = 0; x <= W(); x += 8) {
+          const y = yBase + Math.sin(x * l.len + t * l.speed + l.offset) * l.amp;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(W(), H());
+        ctx.closePath();
+        ctx.fillStyle = l.color;
+        ctx.fill();
+      });
+ 
+      // foam sparkle along the top wave crest
+      ctx.save();
+      for (let x = 0; x <= W(); x += 24) {
+        const y = baseline + layers[0].height * H() * 0.4 + Math.sin(x * layers[0].len + t * layers[0].speed) * layers[0].amp;
+        const tw = (Math.sin(x * 0.05 + t * 0.05) + 1) / 2;
+        ctx.globalAlpha = 0.4 + tw * 0.5;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x, y - 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+ 
+    function loop() {
+      t += 1;
+      const sky = ctx.createLinearGradient(0, 0, 0, H());
+      sky.addColorStop(0, '#ffb6d5');
+      sky.addColorStop(0.5, '#ff9fc8');
+      sky.addColorStop(1, '#ff85bd');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W(), H());
+ 
+      sparkles.forEach(s => { s.update(); s.draw(); });
+      petals.forEach(p => { p.update(); p.draw(); });
+      bubbles.forEach(b => { b.update(); b.draw(); });
+      drawWaves();
+ 
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
+ 
